@@ -1,29 +1,31 @@
 import * as cdk from 'aws-cdk-lib'
-import {StackProps} from 'aws-cdk-lib'
+import {CfnOutput, StackProps} from 'aws-cdk-lib'
 import {MockIntegration, PassthroughBehavior, ResponseType, RestApi} from 'aws-cdk-lib/aws-apigateway'
 import {Certificate} from 'aws-cdk-lib/aws-certificatemanager'
 import {RetentionDays} from 'aws-cdk-lib/aws-logs'
 import {ARecord, HostedZone, RecordTarget} from 'aws-cdk-lib/aws-route53'
 import {ApiGateway} from 'aws-cdk-lib/aws-route53-targets'
 import {Construct} from 'constructs'
+import {AuthService} from './auth-service/auth-service'
+import {restApiEndpointOutputKey, userPoolClientIdOutputKey, userPoolIdOutputKey} from './consts'
 import {ApiParams, UserMgmtParams} from './types'
+import {UserMgmt} from './user-mgmt/user-mgmt'
 
 
 type BaseStackProps = Readonly<{
     envName: string
-    artifactsBucketName: string
+    userMgmt: UserMgmtParams
     logRetention: RetentionDays
-    api?: ApiParams
-    userMgmt?: UserMgmtParams
+    authApi?: ApiParams
 }> & StackProps
 
-export class AkuratAuthStack extends cdk.Stack {
+// export user pool to be use by core stack -> arn
+export class BaseStack extends cdk.Stack {
     constructor(scope: Construct,
                 id: string,
                 {
                     envName,
-                    artifactsBucketName,
-                    api,
+                    authApi,
                     userMgmt,
                     logRetention,
                     ...props
@@ -34,7 +36,6 @@ export class AkuratAuthStack extends cdk.Stack {
 
         const restApi = new RestApi(this, 'RestApi', {
             description: `[${envName}] REST api for auth service`,
-            cloudWatchRole: true,
             deployOptions: {
                 stageName: envName,
             },
@@ -63,9 +64,23 @@ export class AkuratAuthStack extends cdk.Stack {
             ],
         })
 
-        if (baseDomainName && api) {
-            const {domainPrefix, certArn} = api
-            const domainName = domainPrefix ? `${domainPrefix}.${baseDomainName}` : baseDomainName
+        const {userPool} = new UserMgmt(this, 'UserMgmt', {
+            envName,
+            restApiV1Resource,
+            userMgmt,
+            logRetention,
+        })
+
+        const {userPoolClientId} = new AuthService(this, 'AuthService', {
+            restApi,
+            restApiV1Resource,
+            userPool,
+            logRetention,
+        })
+
+        if (baseDomainName && authApi) {
+            const {domainPrefix, apiPrefix, certArn} = authApi
+            const domainName = domainPrefix ? `${apiPrefix}.${domainPrefix}.${baseDomainName}` : `${apiPrefix}.${baseDomainName}`
             const hostedZone = HostedZone.fromLookup(this, 'HostedZone', {domainName: baseDomainName})
             restApi.addDomainName('DomainName', {
                 domainName,
@@ -77,5 +92,8 @@ export class AkuratAuthStack extends cdk.Stack {
                 target: RecordTarget.fromAlias(new ApiGateway(restApi)),
             })
         }
+        new CfnOutput(this, restApiEndpointOutputKey, {value: restApi.url})
+        new CfnOutput(this, userPoolClientIdOutputKey, {value: userPoolClientId})
+        new CfnOutput(this, userPoolIdOutputKey, {value: userPool.userPoolId})
     }
 }

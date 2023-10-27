@@ -1,3 +1,5 @@
+import {restApiEndpointOutputKey, userPoolClientIdOutputKey, userPoolIdOutputKey} from './consts'
+
 export type UserParams = Readonly<{
     email: string
     password: string
@@ -10,6 +12,13 @@ export type UserMgmtParams = Readonly<{
 }>
 
 export type ApiParams = Readonly<{
-    domainPrefix: string
+    apiPrefix: string
     certArn: string
+    domainPrefix?: string
+}>
+
+export type CdkOutputs = Readonly<{
+    [restApiEndpointOutputKey]: string
+    [userPoolClientIdOutputKey]: string
+    [userPoolIdOutputKey]: string
 }>
