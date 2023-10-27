@@ -65,14 +65,16 @@ export class BaseStack extends Stack {
         })
 
         if (baseDomainName && authApi) {
+            const {domainPrefix, apiPrefix, certArn} = authApi
+            const fullDomainName = domainPrefix ? `${domainPrefix}.${baseDomainName}` : baseDomainName
+            const domainName = `${apiPrefix}.${fullDomainName}`
+
             restApiV1Resource.addCorsPreflight({
                 allowHeaders: ['Content-Type', 'Authorization', setCookieHeaderKey],
                 allowMethods: ['OPTIONS', 'GET', 'POST'],
                 allowCredentials: true,
-                allowOrigins: [`https://${baseDomainName}`],
+                allowOrigins: [`https://${fullDomainName}`],
             })
-            const {domainPrefix, apiPrefix, certArn} = authApi
-            const domainName = domainPrefix ? `${apiPrefix}.${domainPrefix}.${baseDomainName}` : `${apiPrefix}.${baseDomainName}`
             const hostedZone = HostedZone.fromLookup(this, 'HostedZone', {domainName: baseDomainName})
             restApi.addDomainName('DomainName', {
                 domainName,
