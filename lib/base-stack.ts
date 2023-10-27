@@ -1,5 +1,5 @@
 import {CfnOutput, Stack, StackProps} from 'aws-cdk-lib'
-import {MockIntegration, PassthroughBehavior, ResponseType, RestApi} from 'aws-cdk-lib/aws-apigateway'
+import {ResponseType, RestApi} from 'aws-cdk-lib/aws-apigateway'
 import {Certificate} from 'aws-cdk-lib/aws-certificatemanager'
 import {RetentionDays} from 'aws-cdk-lib/aws-logs'
 import {ARecord, HostedZone, RecordTarget} from 'aws-cdk-lib/aws-route53'
@@ -50,20 +50,6 @@ export class BaseStack extends Stack {
         })
 
         const restApiV1Resource = restApi.root.addResource('api').addResource('v1')
-        restApiV1Resource.addMethod('ANY', new MockIntegration({
-            integrationResponses: [
-                {statusCode: '200'},
-            ],
-            passthroughBehavior: PassthroughBehavior.NEVER,
-            requestTemplates: {
-                'application/json': '{ "statusCode": 200 }',
-            },
-        }), {
-            methodResponses: [
-                {statusCode: '200'},
-            ],
-        })
-
         const {userPool} = new UserMgmt(this, 'UserMgmt', {
             envName,
             restApiV1Resource,
