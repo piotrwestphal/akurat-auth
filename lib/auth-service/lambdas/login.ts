@@ -9,7 +9,7 @@ import {
     UserNotConfirmedException,
     UserNotFoundException
 } from '@aws-sdk/client-cognito-identity-provider'
-import { refreshTokenCookieKey, refreshTokenValidityDurationDays } from '../auth.consts'
+import {refreshTokenCookieKey, refreshTokenValidityDurationDays, setCookieHeaderKey} from '../auth.consts'
 
 const userPoolClientId = process.env.USER_POOL_CLIENT_ID as string
 const awsRegion = process.env.AWS_REGION as string
@@ -41,7 +41,7 @@ export const handler = async ({
                     accessToken: AccessToken!
                 } satisfies AuthRes),
                 headers: {
-                    'Set-Cookie': `${refreshTokenCookieKey}=${RefreshToken}; SameSite=Strict; Secure; HttpOnly; Path=/; Max-Age=${refreshTokenValidityDurationSeconds};`
+                    [setCookieHeaderKey]: `${refreshTokenCookieKey}=${RefreshToken}; SameSite=Strict; Secure; HttpOnly; Path=/; Max-Age=${refreshTokenValidityDurationSeconds};`
                 }
             }
         }

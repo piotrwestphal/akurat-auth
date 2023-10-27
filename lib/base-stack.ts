@@ -1,5 +1,4 @@
-import * as cdk from 'aws-cdk-lib'
-import {CfnOutput, StackProps} from 'aws-cdk-lib'
+import {CfnOutput, Stack, StackProps} from 'aws-cdk-lib'
 import {MockIntegration, PassthroughBehavior, ResponseType, RestApi} from 'aws-cdk-lib/aws-apigateway'
 import {Certificate} from 'aws-cdk-lib/aws-certificatemanager'
 import {RetentionDays} from 'aws-cdk-lib/aws-logs'
@@ -7,6 +6,7 @@ import {ARecord, HostedZone, RecordTarget} from 'aws-cdk-lib/aws-route53'
 import {ApiGateway} from 'aws-cdk-lib/aws-route53-targets'
 import {Construct} from 'constructs'
 import {AuthService} from './auth-service/auth-service'
+import {setCookieHeaderKey} from './auth-service/auth.consts'
 import {restApiEndpointOutputKey, userPoolClientIdOutputKey, userPoolIdOutputKey} from './consts'
 import {ApiParams, UserMgmtParams} from './types'
 import {UserMgmt} from './user-mgmt/user-mgmt'
@@ -19,8 +19,8 @@ type BaseStackProps = Readonly<{
     authApi?: ApiParams
 }> & StackProps
 
-// export user pool to be use by core stack -> arn
-export class BaseStack extends cdk.Stack {
+// TODO: export user pool arn to be used by core stack
+export class BaseStack extends Stack {
     constructor(scope: Construct,
                 id: string,
                 {
@@ -79,6 +79,12 @@ export class BaseStack extends cdk.Stack {
         })
 
         if (baseDomainName && authApi) {
+            restApiV1Resource.addCorsPreflight({
+                allowHeaders: ['Content-Type', 'Authorization', setCookieHeaderKey],
+                allowMethods: ['OPTIONS', 'GET', 'POST'],
+                allowCredentials: true,
+                allowOrigins: [`https://${baseDomainName}`],
+            })
             const {domainPrefix, apiPrefix, certArn} = authApi
             const domainName = domainPrefix ? `${apiPrefix}.${domainPrefix}.${baseDomainName}` : `${apiPrefix}.${baseDomainName}`
             const hostedZone = HostedZone.fromLookup(this, 'HostedZone', {domainName: baseDomainName})

@@ -1,4 +1,5 @@
 import { ApiGatewayEvent, ApiGatewayLambdaResponse } from '@lambda-types'
+import {setCookieHeaderKey} from '../auth.consts'
 
 export const handler = async (_: ApiGatewayEvent): Promise<ApiGatewayLambdaResponse> => {
     try {
@@ -6,7 +7,7 @@ export const handler = async (_: ApiGatewayEvent): Promise<ApiGatewayLambdaRespo
             statusCode: 200,
             body: JSON.stringify({message: 'User has been logged out'}),
             headers: {
-                'Set-Cookie': `token=x; SameSite=Strict; Secure; HttpOnly; Path=/; Max-Age=0;`
+                [setCookieHeaderKey]: `token=x; SameSite=Strict; Secure; HttpOnly; Path=/; Max-Age=0;`
             }
         }
     } catch (err) {

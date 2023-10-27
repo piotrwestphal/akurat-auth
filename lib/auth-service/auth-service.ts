@@ -33,8 +33,6 @@ export class AuthService extends Construct {
                 }: AuthProps) {
         super(scope, id)
 
-        const authResource = restApiV1Resource.addResource('auth')
-
         const commonProps: Partial<NodejsFunctionProps> = {
             ...globalCommonLambdaProps,
             logRetention,
@@ -47,7 +45,7 @@ export class AuthService extends Construct {
             refreshTokenValidity: Duration.days(refreshTokenValidityDurationDays),
         })
 
-        const loginResource = authResource.addResource('login')
+        const loginResource = restApiV1Resource.addResource('login')
         const loginFunc = new NodejsFunction(this, 'LoginFunc', {
             description: 'Login user',
             entry: join(__dirname, 'lambdas', 'login.ts'),
@@ -70,7 +68,7 @@ export class AuthService extends Construct {
                 },
             })
 
-        const logoutResource = authResource.addResource('logout')
+        const logoutResource = restApiV1Resource.addResource('logout')
         const logoutFunc = new NodejsFunction(this, 'LogoutFunc', {
             description: 'Logout user',
             entry: join(__dirname, 'lambdas', 'logout.ts'),
@@ -82,7 +80,7 @@ export class AuthService extends Construct {
 
         logoutResource.addMethod('GET', new LambdaIntegration(logoutFunc))
 
-        const refreshResource = authResource.addResource('refresh')
+        const refreshResource = restApiV1Resource.addResource('refresh')
         const refreshFunc = new NodejsFunction(this, 'RefreshFunc', {
             description: 'Refresh token',
             entry: join(__dirname, 'lambdas', 'refresh.ts'),
@@ -93,7 +91,7 @@ export class AuthService extends Construct {
         })
         refreshResource.addMethod('GET', new LambdaIntegration(refreshFunc))
 
-        const registerResource = authResource.addResource('signup')
+        const registerResource = restApiV1Resource.addResource('signup')
         const signupFunc = new NodejsFunction(this, 'SignupFunc', {
             description: 'Sign up user',
             entry: join(__dirname, 'lambdas', 'signup.ts'),
@@ -116,7 +114,7 @@ export class AuthService extends Construct {
                 },
             })
 
-        const confirmSignupResource = authResource.addResource('confirm-signup')
+        const confirmSignupResource = restApiV1Resource.addResource('confirm-signup')
         const confirmSignupFunc = new NodejsFunction(this, 'ConfirmSignupFunc', {
             description: 'Confirm sign up user',
             entry: join(__dirname, 'lambdas', 'confirm-signup.ts'),
@@ -139,7 +137,7 @@ export class AuthService extends Construct {
                 },
             })
 
-        const forgotPasswordResource = authResource.addResource('forgot')
+        const forgotPasswordResource = restApiV1Resource.addResource('forgot')
 
         const forgotPasswordFunc = new NodejsFunction(this, 'ForgotPasswordFunc', {
             description: 'Forgot user password',
@@ -163,7 +161,7 @@ export class AuthService extends Construct {
                 },
             })
 
-        const confirmForgotPasswordResource = authResource.addResource('confirm-forgot')
+        const confirmForgotPasswordResource = restApiV1Resource.addResource('confirm-forgot')
 
         const confirmForgotPasswordFunc = new NodejsFunction(this, 'ConfirmForgotPasswordFunc', {
             description: 'Confirm forgot user password',

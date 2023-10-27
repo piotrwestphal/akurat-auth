@@ -7,9 +7,8 @@ describe('User logout api tests', () => {
 
     const req = request(testRestApiEndpoint)
 
-    test('GET "/auth/logout" should log out current user', async () => {
-
-        await req.get('api/v1/auth/logout')
+    test('GET "/logout" should log out current user', async () => {
+        await req.get('api/v1/logout')
             .expect('Content-Type', /json/)
             .expect(200)
             .then((res: Response) => {

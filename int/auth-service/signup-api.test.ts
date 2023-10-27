@@ -9,7 +9,7 @@ describe('Signup user api tests', () => {
 
     const req = request(testRestApiEndpoint)
 
-    test('POST "/auth/signup" should sign up a user', async () => {
+    test('POST "/signup" should sign up a user', async () => {
         const signUpReq = {
             email: testAutoConfirmedEmail,
             password: 'testTest1',
@@ -18,7 +18,7 @@ describe('Signup user api tests', () => {
         // Clean up
         await deleteUser(testCognitoUserPoolId, signUpReq.email)
 
-        await req.post('api/v1/auth/signup')
+        await req.post('api/v1/signup')
             .send(signUpReq)
             .expect('Content-Type', /json/)
             .expect(200)
@@ -33,7 +33,7 @@ describe('Signup user api tests', () => {
         await deleteUser(testCognitoUserPoolId, signUpReq.email)
     })
 
-    test(`POST "/auth/signup" should not accept if user already signed up`, async () => {
+    test(`POST "/signup" should not accept if user already signed up`, async () => {
         const signupReq: AuthReq = {
             email: `kornwalia.pomidor@${testAcceptedEmailDomain}`,
             password: 'Passw0$rd',
@@ -42,7 +42,7 @@ describe('Signup user api tests', () => {
         await deleteUser(testCognitoUserPoolId, signupReq.email)
 
         await createUser(testCognitoUserPoolId, signupReq.email)
-        await req.post('api/v1/auth/signup')
+        await req.post('api/v1/signup')
             .send(signupReq)
             .expect(400)
             .then((res: Response) => {
@@ -53,12 +53,12 @@ describe('Signup user api tests', () => {
         await deleteUser(testCognitoUserPoolId, signupReq.email)
     })
 
-    test(`POST "/auth/signup" should not accept if invalid email domain`, async () => {
+    test(`POST "/signup" should not accept if invalid email domain`, async () => {
         const loginReq: AuthReq = {
             email: 'Lech@Walesa.com',
             password: 'Passw0$rd',
         }
-        await req.post('api/v1/auth/signup')
+        await req.post('api/v1/signup')
             .send(loginReq)
             .expect(400)
             .then((res: Response) => {
@@ -66,12 +66,12 @@ describe('Signup user api tests', () => {
             })
     })
 
-    test(`POST "/auth/signup" should not accept if the password does not meet the conditions`, async () => {
+    test(`POST "/signup" should not accept if the password does not meet the conditions`, async () => {
         const loginReq: AuthReq = {
             email: `Lech@${testAcceptedEmailDomain}`,
             password: 'Wałęsa',
         }
-        await req.post('api/v1/auth/signup')
+        await req.post('api/v1/signup')
             .send(loginReq)
             .expect(400)
             .then((res: Response) => {
@@ -79,12 +79,12 @@ describe('Signup user api tests', () => {
             })
     })
 
-    test(`POST "/auth/signup" should not accept if email in the wrong format`, async () => {
+    test(`POST "/signup" should not accept if email in the wrong format`, async () => {
         const loginReq: AuthReq = {
             email: 'Lech.Walesa.com',
             password: 'Wałęsa',
         }
-        await req.post('api/v1/auth/signup')
+        await req.post('api/v1/signup')
             .send(loginReq)
             .expect(400)
             .then((res: Response) => {
@@ -92,12 +92,12 @@ describe('Signup user api tests', () => {
             })
     })
 
-    test('POST "/auth/signup" should not accept because of the missing field', async () => {
+    test('POST "/signup" should not accept because of the missing field', async () => {
         const loginReq = {
             email: `Lech@${testAcceptedEmailDomain}`,
         } as AuthReq
 
-        await req.post('api/v1/auth/signup')
+        await req.post('api/v1/signup')
             .expect(400)
             .send(loginReq)
             .then((res: Response) => {
@@ -105,14 +105,14 @@ describe('Signup user api tests', () => {
             })
     })
 
-    test('POST "/auth/signup" should not accept because of the extra field', async () => {
+    test('POST "/signup" should not accept because of the extra field', async () => {
         const loginReq = {
             email: `Lech@${testAcceptedEmailDomain}`,
             password: 'Wałęsa',
             hack: 'let me in'
         } as AuthReq
 
-        await req.post('api/v1/auth/signup')
+        await req.post('api/v1/signup')
             .expect(400)
             .send(loginReq)
             .then((res: Response) => {

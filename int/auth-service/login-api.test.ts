@@ -14,13 +14,13 @@ describe('User login api tests', () => {
 
     const req = request(testRestApiEndpoint)
 
-    test('POST "/auth/login" should login', async () => {
+    test('POST "/login" should login', async () => {
         const loginReq = {
             email: testAdminEmail,
             password: testAdminPassword,
         } satisfies AuthReq
 
-        await req.post('api/v1/auth/login')
+        await req.post('api/v1/login')
             .send(loginReq)
             .expect('Content-Type', /json/)
             .expect(200)
@@ -41,7 +41,7 @@ describe('User login api tests', () => {
             })
     })
 
-    test(`POST "/auth/login" should not accept if user is not confirmed`, async () => {
+    test(`POST "/login" should not accept if user is not confirmed`, async () => {
         const loginReq: AuthReq = {
             email: `kornwalia.pomidor@${testAcceptedEmailDomain}`,
             password: 'Passw0$rd',
@@ -50,7 +50,7 @@ describe('User login api tests', () => {
         await deleteUser(testCognitoUserPoolId, loginReq.email)
 
         await registerUser(testCognitoUserPoolClientId, loginReq)
-        await req.post('api/v1/auth/login')
+        await req.post('api/v1/login')
             .send(loginReq)
             .expect(409)
             .then((res: Response) => {
@@ -61,12 +61,12 @@ describe('User login api tests', () => {
         await deleteUser(testCognitoUserPoolId, loginReq.email)
     })
 
-    test(`POST "/auth/login" should not accept if user doesn't exist in db`, async () => {
+    test(`POST "/login" should not accept if user doesn't exist in db`, async () => {
         const loginReq: AuthReq = {
             email: 'Milka@Walesa.com',
             password: 'Passw0$rd',
         }
-        await req.post('api/v1/auth/login')
+        await req.post('api/v1/login')
             .send(loginReq)
             .expect(400)
             .then((res: Response) => {
@@ -74,12 +74,12 @@ describe('User login api tests', () => {
             })
     })
 
-    test(`POST "/auth/login" should not accept if email in the wrong format`, async () => {
+    test(`POST "/login" should not accept if email in the wrong format`, async () => {
         const loginReq: AuthReq = {
             email: 'Lech.Walesa.com',
             password: 'Wałęsa',
         }
-        await req.post('api/v1/auth/login')
+        await req.post('api/v1/login')
             .send(loginReq)
             .expect(400)
             .then((res: Response) => {
@@ -87,12 +87,12 @@ describe('User login api tests', () => {
             })
     })
 
-    test(`POST "/auth/login" should not accept if wrong password`, async () => {
+    test(`POST "/login" should not accept if wrong password`, async () => {
         const loginReq: AuthReq = {
             email: testAdminEmail,
             password: `${testAdminPassword}!!`,
         }
-        await req.post('api/v1/auth/login')
+        await req.post('api/v1/login')
             .send(loginReq)
             .expect(400)
             .then((res: Response) => {
@@ -100,12 +100,12 @@ describe('User login api tests', () => {
             })
     })
 
-    test('POST "/auth/login" should not accept because of the missing field', async () => {
+    test('POST "/login" should not accept because of the missing field', async () => {
         const loginReq = {
             email: 'Lech',
         } as AuthReq
 
-        await req.post('api/v1/auth/login')
+        await req.post('api/v1/login')
             .expect(400)
             .send(loginReq)
             .then((res: Response) => {
@@ -113,14 +113,14 @@ describe('User login api tests', () => {
             })
     })
 
-    test('POST "/auth/login" should not accept because of the extra field', async () => {
+    test('POST "/login" should not accept because of the extra field', async () => {
         const loginReq = {
             email: 'Lech',
             password: 'Wałęsa',
             hack: 'let me in'
         } as AuthReq
 
-        await req.post('api/v1/auth/login')
+        await req.post('api/v1/login')
             .expect(400)
             .send(loginReq)
             .then((res: Response) => {

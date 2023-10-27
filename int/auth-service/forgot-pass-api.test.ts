@@ -9,7 +9,7 @@ describe('Forgot password api tests', () => {
 
     const req = request(testRestApiEndpoint)
 
-    test('POST "/auth/forgot" should return delivery details', async () => {
+    test('POST "/forgot" should return delivery details', async () => {
         const signUpReq = {
             email: testAutoConfirmedEmail,
             password: 'testTest1',
@@ -18,12 +18,12 @@ describe('Forgot password api tests', () => {
         // Clean up
         await deleteUser(testCognitoUserPoolId, signUpReq.email)
 
-        await req.post('api/v1/auth/signup')
+        await req.post('api/v1/signup')
             .send(signUpReq)
             .expect('Content-Type', /json/)
             .expect(200)
 
-        await req.post('api/v1/auth/forgot')
+        await req.post('api/v1/forgot')
             .send({email: signUpReq.email} satisfies ForgotPasswordReq)
             .expect('Content-Type', /json/)
             .expect(200)
@@ -37,7 +37,7 @@ describe('Forgot password api tests', () => {
         await deleteUser(testCognitoUserPoolId, signUpReq.email)
     })
 
-    test('POST "/auth/forgot" should not accept if user is not confirmed', async () => {
+    test('POST "/forgot" should not accept if user is not confirmed', async () => {
         const signUpReq = {
             email: `temp@${testAcceptedEmailDomain}`,
             password: 'testTest1',
@@ -46,12 +46,12 @@ describe('Forgot password api tests', () => {
         // Clean up
         await deleteUser(testCognitoUserPoolId, signUpReq.email)
 
-        await req.post('api/v1/auth/signup')
+        await req.post('api/v1/signup')
             .send(signUpReq)
             .expect('Content-Type', /json/)
             .expect(200)
 
-        await req.post('api/v1/auth/forgot')
+        await req.post('api/v1/forgot')
             .send({email: signUpReq.email} satisfies ForgotPasswordReq)
             .expect('Content-Type', /json/)
             .expect(400)
@@ -63,8 +63,8 @@ describe('Forgot password api tests', () => {
         await deleteUser(testCognitoUserPoolId, signUpReq.email)
     })
 
-    test('POST "/auth/forgot" should not accept if user not found', async () => {
-        await req.post('api/v1/auth/forgot')
+    test('POST "/forgot" should not accept if user not found', async () => {
+        await req.post('api/v1/forgot')
             .send({email: `nonexistinguser@${testAcceptedEmailDomain}`} satisfies ForgotPasswordReq)
             .expect('Content-Type', /json/)
             .expect(400)
@@ -73,8 +73,8 @@ describe('Forgot password api tests', () => {
             })
     })
 
-    test('POST "/auth/forgot" should not accept because of the missing field', async () => {
-        await req.post('api/v1/auth/forgot')
+    test('POST "/forgot" should not accept because of the missing field', async () => {
+        await req.post('api/v1/forgot')
             .send({})
             .expect('Content-Type', /json/)
             .expect(400)
@@ -83,8 +83,8 @@ describe('Forgot password api tests', () => {
             })
     })
 
-    test('POST "/auth/forgot" should not accept because of the extra field', async () => {
-        await req.post('api/v1/auth/forgot')
+    test('POST "/forgot" should not accept because of the extra field', async () => {
+        await req.post('api/v1/forgot')
             .send({email: `someuser@${testAcceptedEmailDomain}`, extra: 'value'} as ForgotPasswordReq)
             .expect('Content-Type', /json/)
             .expect(400)
