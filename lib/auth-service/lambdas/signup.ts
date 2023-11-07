@@ -1,5 +1,3 @@
-import { ApiGatewayEvent, ApiGatewayLambdaResponse } from '@lambda-types'
-import { AuthReq, SignUpRes } from '../auth.types'
 import {
     CognitoIdentityProviderClient,
     CognitoIdentityProviderServiceException,
@@ -7,16 +5,17 @@ import {
     SignUpCommand,
     SignUpCommandOutput,
     UserLambdaValidationException,
-    UsernameExistsException
+    UsernameExistsException,
 } from '@aws-sdk/client-cognito-identity-provider'
+import {ApiGatewayEvent, ApiGatewayLambdaResponse} from '@lambda-types'
+import {resWithCors} from '../../lambda.utils'
+import {AuthReq, SignUpRes} from '../auth.types'
 
 const userPoolClientId = process.env.USER_POOL_CLIENT_ID as string
-const awsRegion = process.env.AWS_REGION as string
-
-const cognitoClient = new CognitoIdentityProviderClient({region: awsRegion})
+const cognitoClient = new CognitoIdentityProviderClient()
 
 export const handler = async ({
-                                  body
+                                  body,
                               }: ApiGatewayEvent): Promise<ApiGatewayLambdaResponse> => {
     const {email, password} = JSON.parse(body) as AuthReq
     try {
@@ -26,31 +25,21 @@ export const handler = async ({
             Password: password,
         }))
         console.log(`A user account for the email address [${email}] has been successfully created.`)
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify(toResponse(result))
-        }
+        return resWithCors(200, toResponse(result))
     } catch (err) {
-        console.error(`Error during signing up user with email [${email}]`, JSON.stringify(err, null, 2))
+        console.error(`Error during signing up user with email [${email}]`, err)
         if (err instanceof UsernameExistsException) {
             return badRequest(err)
         }
         if (err instanceof UserLambdaValidationException) {
-            return {
-                statusCode: 400,
-                // original error message - `PreSignUp failed with error Email domain is not accepted.`
-                body: JSON.stringify({message: 'Email domain is not accepted.'})
-            }
+            // original error message - `PreSignUp failed with error Email domain is not accepted.`
+            return resWithCors(400, {message: 'Email domain is not accepted.'})
         }
         if (err instanceof InvalidPasswordException) {
             return badRequest(err)
         }
         const {name, message} = err as CognitoIdentityProviderServiceException
-        return {
-            statusCode: 500,
-            body: JSON.stringify({message: `${name}: ${message}`})
-        }
+        return resWithCors(500, {message: `${name}: ${message}`})
     }
 }
 
@@ -68,11 +57,9 @@ const toResponse = ({
     return {
         userConfirmed: UserConfirmed!,
         userSub: UserSub!,
-        codeDeliveryDetails
+        codeDeliveryDetails,
     }
 }
 
-const badRequest = (err: CognitoIdentityProviderServiceException) => ({
-    statusCode: 400,
-    body: JSON.stringify({message: err.message})
-})
+const badRequest = (err: CognitoIdentityProviderServiceException) =>
+    resWithCors(400, {message: err.message})

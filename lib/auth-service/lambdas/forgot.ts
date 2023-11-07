@@ -1,21 +1,20 @@
-import { ApiGatewayEvent, ApiGatewayLambdaResponse } from '@lambda-types'
-import { ForgotPasswordReq, ForgotPasswordRes } from '../auth.types'
 import {
     CognitoIdentityProviderClient,
     CognitoIdentityProviderServiceException,
     ForgotPasswordCommand,
     ForgotPasswordCommandOutput,
     InvalidParameterException,
-    UserNotFoundException
+    UserNotFoundException,
 } from '@aws-sdk/client-cognito-identity-provider'
+import {ApiGatewayEvent, ApiGatewayLambdaResponse} from '@lambda-types'
+import {resWithCors} from '../../lambda.utils'
+import {ForgotPasswordReq, ForgotPasswordRes} from '../auth.types'
 
 const userPoolClientId = process.env.USER_POOL_CLIENT_ID as string
-const awsRegion = process.env.AWS_REGION as string
-
-const cognitoClient = new CognitoIdentityProviderClient({region: awsRegion})
+const cognitoClient = new CognitoIdentityProviderClient()
 
 export const handler = async ({
-                                  body
+                                  body,
                               }: ApiGatewayEvent): Promise<ApiGatewayLambdaResponse> => {
     const {email} = JSON.parse(body) as ForgotPasswordReq
     try {
@@ -24,31 +23,18 @@ export const handler = async ({
             Username: email,
         }))
 
-        return {
-            statusCode: 200,
-            body: JSON.stringify(toResponse(result))
-        }
+        return resWithCors(200, toResponse(result))
     } catch (err) {
-        console.error(`Error during notifying about forgot password for a user with the email [${email}]`, JSON.stringify(err, null, 2))
+        console.error(`Error during notifying about forgot password for a user with the email [${email}]`, err)
         const {name, message} = err as CognitoIdentityProviderServiceException
 
         if (err instanceof UserNotFoundException) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({message: `User not found`})
-            }
+            return resWithCors(400, {message: `User not found`})
         }
-
         if (err instanceof InvalidParameterException) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({message})
-            }
+            return resWithCors(400, {message})
         }
-        return {
-            statusCode: 500,
-            body: JSON.stringify({message: `${name}: ${message}`})
-        }
+        return resWithCors(500, {message: `${name}: ${message}`})
     }
 }
 
@@ -61,6 +47,6 @@ const toResponse = ({
                 deliveryMedium: CodeDeliveryDetails.DeliveryMedium!,
                 destination: CodeDeliveryDetails.Destination!,
             } satisfies ForgotPasswordRes['codeDeliveryDetails']
-            : undefined
+            : undefined,
     }
 }

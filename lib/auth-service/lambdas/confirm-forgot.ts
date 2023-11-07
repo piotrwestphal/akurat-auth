@@ -1,5 +1,3 @@
-import { ApiGatewayEvent, ApiGatewayLambdaResponse } from '@lambda-types'
-import { ConfirmForgotPasswordReq } from '../auth.types'
 import {
     CodeMismatchException,
     CognitoIdentityProviderClient,
@@ -8,16 +6,17 @@ import {
     ExpiredCodeException,
     InvalidPasswordException,
     LimitExceededException,
-    UserNotFoundException
+    UserNotFoundException,
 } from '@aws-sdk/client-cognito-identity-provider'
+import {ApiGatewayEvent, ApiGatewayLambdaResponse} from '@lambda-types'
+import {resWithCors} from '../../lambda.utils'
+import {ConfirmForgotPasswordReq} from '../auth.types'
 
 const userPoolClientId = process.env.USER_POOL_CLIENT_ID as string
-const awsRegion = process.env.AWS_REGION as string
-
-const cognitoClient = new CognitoIdentityProviderClient({region: awsRegion})
+const cognitoClient = new CognitoIdentityProviderClient()
 
 export const handler = async ({
-                                  body
+                                  body,
                               }: ApiGatewayEvent): Promise<ApiGatewayLambdaResponse> => {
     const {email, password, confirmationCode} = JSON.parse(body) as ConfirmForgotPasswordReq
     try {
@@ -27,12 +26,9 @@ export const handler = async ({
             Password: password,
             ConfirmationCode: confirmationCode,
         }))
-        return {
-            statusCode: 200,
-            body: JSON.stringify({message: 'Password has been reset'}),
-        }
+        return resWithCors(200, {message: 'Password has been reset'})
     } catch (err) {
-        console.error(`Error during a forgot password confirmation for a user with the email [${email}]`, JSON.stringify(err, null, 2))
+        console.error(`Error during a forgot password confirmation for a user with the email [${email}]`, err)
         const {name, message} = err as CognitoIdentityProviderServiceException
 
         if (err instanceof UserNotFoundException) {
@@ -50,14 +46,8 @@ export const handler = async ({
         if (err instanceof LimitExceededException) {
             return badRequest(message)
         }
-        return {
-            statusCode: 500,
-            body: JSON.stringify({message: `${name}: ${message}`})
-        }
+        return resWithCors(500, {message: `${name}: ${message}`})
     }
 }
 
-const badRequest = (message: string) => ({
-    statusCode: 400,
-    body: JSON.stringify({message})
-})
+const badRequest = (message: string) => resWithCors(400, {message})

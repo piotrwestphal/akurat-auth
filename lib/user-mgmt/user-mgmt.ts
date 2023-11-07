@@ -11,6 +11,7 @@ import {UserMgmtParams} from '../types'
 
 type UserMgmtProps = Readonly<{
     envName: string
+    disableUsersApi?: true
     restApiV1Resource: Resource
     userMgmt: UserMgmtParams
     logRetention: RetentionDays
@@ -30,6 +31,7 @@ export class UserMgmt extends Construct {
                         autoConfirmedEmails,
                         acceptedEmailDomains,
                     },
+                    disableUsersApi,
                     logRetention,
                 }: UserMgmtProps) {
         super(scope, id)
@@ -38,8 +40,6 @@ export class UserMgmt extends Construct {
             ...globalCommonLambdaProps,
             logRetention,
         }
-
-        const usersResource = restApiV1Resource.addResource('users')
 
         const preSignupFunc = new NodejsFunction(this, 'PreSignupFunc', {
             description: 'Pre signing up user',
@@ -50,6 +50,7 @@ export class UserMgmt extends Construct {
             },
             ...commonProps,
         })
+
         this.userPool = new UserPool(this, 'UserPool', {
             userPoolName: `${envName}-UserPool`,
             selfSignUpEnabled: true,
@@ -70,39 +71,42 @@ export class UserMgmt extends Construct {
             removalPolicy: RemovalPolicy.DESTROY,
         })
 
-        const authorizer = new CognitoUserPoolsAuthorizer(this, 'CognitoAuthorizer', {
-            cognitoUserPools: [this.userPool],
-        })
-
         adminUsers.forEach(user => {
             new CognitoUser(this, `User-${user.email}`, {userPool: this.userPool, ...user})
         })
 
-        const getAllUsersFunc = new NodejsFunction(this, 'GetAllUsersFunc', {
-            description: 'List users',
-            entry: join(__dirname, 'lambdas', 'get-all.ts'),
-            environment: {
-                USER_POOL_ID: this.userPool.userPoolId,
-            },
-            ...commonProps,
-        })
-        usersResource.addMethod('GET', new LambdaIntegration(getAllUsersFunc), {
-            authorizer,
-        })
-        this.userPool.grant(getAllUsersFunc, 'cognito-idp:ListUsers')
+        if (!disableUsersApi) {
+            const authorizer = new CognitoUserPoolsAuthorizer(this, 'CognitoAuthorizer', {
+                cognitoUserPools: [this.userPool],
+            })
 
-        const userByIdResource = usersResource.addResource('{id}')
-        const getUserFunc = new NodejsFunction(this, 'GetUserFunc', {
-            description: 'Get a user',
-            entry: join(__dirname, 'lambdas', 'get.ts'),
-            environment: {
-                USER_POOL_ID: this.userPool.userPoolId,
-            },
-            ...commonProps,
-        })
-        userByIdResource.addMethod('GET', new LambdaIntegration(getUserFunc), {
-            authorizer,
-        })
-        this.userPool.grant(getUserFunc, 'cognito-idp:ListUsers')
+            const usersResource = restApiV1Resource.addResource('users', {
+                defaultMethodOptions: {
+                    authorizer,
+                },
+            })
+            const getAllUsersFunc = new NodejsFunction(this, 'GetAllUsersFunc', {
+                description: 'List users',
+                entry: join(__dirname, 'lambdas', 'get-all.ts'),
+                environment: {
+                    USER_POOL_ID: this.userPool.userPoolId,
+                },
+                ...commonProps,
+            })
+            usersResource.addMethod('GET', new LambdaIntegration(getAllUsersFunc))
+            this.userPool.grant(getAllUsersFunc, 'cognito-idp:ListUsers')
+
+            const userByIdResource = usersResource.addResource('{id}')
+            const getUserFunc = new NodejsFunction(this, 'GetUserFunc', {
+                description: 'Get a user',
+                entry: join(__dirname, 'lambdas', 'get.ts'),
+                environment: {
+                    USER_POOL_ID: this.userPool.userPoolId,
+                },
+                ...commonProps,
+            })
+            userByIdResource.addMethod('GET', new LambdaIntegration(getUserFunc))
+            this.userPool.grant(getUserFunc, 'cognito-idp:ListUsers')
+        }
     }
 }

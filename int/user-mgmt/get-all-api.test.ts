@@ -1,6 +1,6 @@
 import * as request from 'supertest'
 import {Response} from 'supertest'
-import {authorizationHeaderKey} from '../../lib/auth-service/auth.consts'
+import {authorizationHeaderKey, corsAllowedHeaders} from '../../lib/auth-service/auth.consts'
 import {testAcceptedEmailDomain, testAdminEmail} from '../../lib/consts'
 import {UserListRes} from '../../lib/user-mgmt/user-mgmt.types'
 import {createUser, deleteUser} from '../aws-helpers'
@@ -26,7 +26,11 @@ describe('Get all users api tests', () => {
 
         await req.get(`api/v1/users`)
             .set(authorizationHeaderKey, defaultUserToken)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(200)
             .then((res: Response) => {
                 const {items} = res.body as UserListRes
@@ -45,6 +49,11 @@ describe('Get all users api tests', () => {
 
     test('GET "/users" unauthorized', async () => {
         await req.get(`api/v1/users`)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(401)
             .then((res: Response) => {
                 expect(res.text).toMatch(/Unauthorized/)
@@ -54,6 +63,11 @@ describe('Get all users api tests', () => {
     test('GET "/users/{id}" forbidden', async () => {
         await req.get(`api/v1/users`)
             .set(authorizationHeaderKey, 'mock')
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(401)
             // TODO
             // .expect(403)

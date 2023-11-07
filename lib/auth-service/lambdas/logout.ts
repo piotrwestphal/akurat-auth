@@ -1,21 +1,16 @@
-import { ApiGatewayEvent, ApiGatewayLambdaResponse } from '@lambda-types'
+import {ApiGatewayEvent, ApiGatewayLambdaResponse} from '@lambda-types'
+import {resWithCors} from '../../lambda.utils'
 import {setCookieHeaderKey} from '../auth.consts'
 
 export const handler = async (_: ApiGatewayEvent): Promise<ApiGatewayLambdaResponse> => {
     try {
-        return {
-            statusCode: 200,
-            body: JSON.stringify({message: 'User has been logged out'}),
-            headers: {
-                [setCookieHeaderKey]: `token=x; SameSite=Strict; Secure; HttpOnly; Path=/; Max-Age=0;`
-            }
-        }
+        return resWithCors(
+            200,
+            {message: 'User has been logged out'},
+            {[setCookieHeaderKey]: `token=x; SameSite=Strict; Secure; HttpOnly; Path=/; Max-Age=0;`})
     } catch (err) {
-        console.error(`Error during logging out a user`, JSON.stringify(err, null, 2))
+        console.error(`Error during logging out a user`, err)
         const {name, message} = err as Error
-        return {
-            statusCode: 500,
-            body: JSON.stringify({message: `${name}: ${message}`})
-        }
+        return resWithCors(500, {message: `${name}: ${message}`})
     }
 }

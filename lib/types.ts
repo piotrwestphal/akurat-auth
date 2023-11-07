@@ -14,6 +14,7 @@ export type UserMgmtParams = Readonly<{
 export type ApiParams = Readonly<{
     apiPrefix: string
     certArn: string
+    userPoolIdParamName: string
     domainPrefix?: string
 }>
 

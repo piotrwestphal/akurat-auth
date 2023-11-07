@@ -1,5 +1,3 @@
-import { ApiGatewayEvent, ApiGatewayLambdaResponse } from '@lambda-types'
-import { AuthReq, AuthRes } from '../auth.types'
 import {
     AuthFlowType,
     CognitoIdentityProviderClient,
@@ -7,18 +5,20 @@ import {
     InitiateAuthCommand,
     NotAuthorizedException,
     UserNotConfirmedException,
-    UserNotFoundException
+    UserNotFoundException,
 } from '@aws-sdk/client-cognito-identity-provider'
+import {ApiGatewayEvent, ApiGatewayLambdaResponse} from '@lambda-types'
+import {resWithCors} from '../../lambda.utils'
 import {refreshTokenCookieKey, refreshTokenValidityDurationDays, setCookieHeaderKey} from '../auth.consts'
+import {AuthReq, AuthRes} from '../auth.types'
 
 const userPoolClientId = process.env.USER_POOL_CLIENT_ID as string
-const awsRegion = process.env.AWS_REGION as string
 
-const cognitoClient = new CognitoIdentityProviderClient({region: awsRegion})
+const cognitoClient = new CognitoIdentityProviderClient()
 const refreshTokenValidityDurationSeconds = refreshTokenValidityDurationDays * 24 * 60 * 60
 
 export const handler = async ({
-                                  body
+                                  body,
                               }: ApiGatewayEvent): Promise<ApiGatewayLambdaResponse> => {
     const {email, password} = JSON.parse(body) as AuthReq
     try {
@@ -33,26 +33,22 @@ export const handler = async ({
         if (authResult.AuthenticationResult) {
             const {RefreshToken, IdToken, ExpiresIn, AccessToken} = authResult.AuthenticationResult
 
-            return {
-                statusCode: 200,
-                body: JSON.stringify({
+            return resWithCors(
+                200,
+                {
                     token: IdToken!,
                     expiresIn: ExpiresIn!,
-                    accessToken: AccessToken!
-                } satisfies AuthRes),
-                headers: {
-                    [setCookieHeaderKey]: `${refreshTokenCookieKey}=${RefreshToken}; SameSite=Strict; Secure; HttpOnly; Path=/; Max-Age=${refreshTokenValidityDurationSeconds};`
-                }
-            }
+                    accessToken: AccessToken!,
+                } satisfies AuthRes,
+                {
+                    [setCookieHeaderKey]: `${refreshTokenCookieKey}=${RefreshToken}; SameSite=Strict; Secure; HttpOnly; Path=/; Max-Age=${refreshTokenValidityDurationSeconds};`,
+                })
         }
         return errorResponse
     } catch (err) {
-        console.error(`Error during logging in a user with the email [${email}]`, JSON.stringify(err, null, 2))
+        console.error(`Error during logging in a user with the email [${email}]`, err)
         if (err instanceof UserNotConfirmedException) {
-            return {
-                statusCode: 409,
-                body: JSON.stringify({message: `User is not confirmed`})
-            }
+            return resWithCors(409, {message: `User is not confirmed`})
         }
         if (err instanceof NotAuthorizedException) {
             return errorResponse
@@ -61,14 +57,9 @@ export const handler = async ({
             return errorResponse
         }
         const {name, message} = err as CognitoIdentityProviderServiceException
-        return {
-            statusCode: 500,
-            body: JSON.stringify({message: `${name}: ${message}`})
-        }
+        return resWithCors(500, {message: `${name}: ${message}`})
     }
 }
 
-const errorResponse = {
-    statusCode: 400,
-    body: JSON.stringify({message: `Incorrect username or password`})
-}
+const errorResponse =
+    resWithCors(400, {message: `Incorrect username or password`})

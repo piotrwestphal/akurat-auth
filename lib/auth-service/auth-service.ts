@@ -33,11 +33,6 @@ export class AuthService extends Construct {
                 }: AuthProps) {
         super(scope, id)
 
-        const commonProps: Partial<NodejsFunctionProps> = {
-            ...globalCommonLambdaProps,
-            logRetention,
-        }
-
         const userPoolClient = userPool.addClient('UserPoolClient', {
             authFlows: {userPassword: true},
             idTokenValidity: Duration.minutes(15),
@@ -45,14 +40,19 @@ export class AuthService extends Construct {
             refreshTokenValidity: Duration.days(refreshTokenValidityDurationDays),
         })
 
+        const commonProps: Partial<NodejsFunctionProps> = {
+            ...globalCommonLambdaProps,
+            environment: {
+                USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId,
+            },
+            logRetention,
+        }
+
         const loginResource = restApiV1Resource.addResource('login')
         const loginFunc = new NodejsFunction(this, 'LoginFunc', {
             description: 'Login user',
             entry: join(__dirname, 'lambdas', 'login.ts'),
             ...commonProps,
-            environment: {
-                USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId,
-            },
         })
 
         loginResource.addMethod('POST', new LambdaIntegration(loginFunc),
@@ -73,9 +73,6 @@ export class AuthService extends Construct {
             description: 'Logout user',
             entry: join(__dirname, 'lambdas', 'logout.ts'),
             ...commonProps,
-            environment: {
-                USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId,
-            },
         })
 
         logoutResource.addMethod('GET', new LambdaIntegration(logoutFunc))
@@ -85,9 +82,6 @@ export class AuthService extends Construct {
             description: 'Refresh token',
             entry: join(__dirname, 'lambdas', 'refresh.ts'),
             ...commonProps,
-            environment: {
-                USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId,
-            },
         })
         refreshResource.addMethod('GET', new LambdaIntegration(refreshFunc))
 
@@ -96,9 +90,6 @@ export class AuthService extends Construct {
             description: 'Sign up user',
             entry: join(__dirname, 'lambdas', 'signup.ts'),
             ...commonProps,
-            environment: {
-                USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId,
-            },
         })
 
         registerResource.addMethod('POST', new LambdaIntegration(signupFunc),
@@ -119,9 +110,6 @@ export class AuthService extends Construct {
             description: 'Confirm sign up user',
             entry: join(__dirname, 'lambdas', 'confirm-signup.ts'),
             ...commonProps,
-            environment: {
-                USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId,
-            },
         })
 
         confirmSignupResource.addMethod('POST', new LambdaIntegration(confirmSignupFunc),
@@ -143,9 +131,6 @@ export class AuthService extends Construct {
             description: 'Forgot user password',
             entry: join(__dirname, 'lambdas', 'forgot.ts'),
             ...commonProps,
-            environment: {
-                USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId,
-            },
         })
 
         forgotPasswordResource.addMethod('POST', new LambdaIntegration(forgotPasswordFunc),
@@ -167,9 +152,6 @@ export class AuthService extends Construct {
             description: 'Confirm forgot user password',
             entry: join(__dirname, 'lambdas', 'confirm-forgot.ts'),
             ...commonProps,
-            environment: {
-                USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId,
-            },
         })
 
         confirmForgotPasswordResource.addMethod('POST', new LambdaIntegration(confirmForgotPasswordFunc),

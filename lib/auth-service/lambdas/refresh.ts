@@ -1,28 +1,25 @@
-import { ApiGatewayEvent, ApiGatewayLambdaResponse } from '@lambda-types'
-import { AuthRes } from '../auth.types'
 import {
     AuthFlowType,
     CognitoIdentityProviderClient,
     CognitoIdentityProviderServiceException,
-    InitiateAuthCommand, NotAuthorizedException
+    InitiateAuthCommand,
+    NotAuthorizedException,
 } from '@aws-sdk/client-cognito-identity-provider'
-import { getCookieValue } from './utils'
-import { refreshTokenCookieKey } from '../auth.consts'
+import {ApiGatewayEvent, ApiGatewayLambdaResponse} from '@lambda-types'
+import {resWithCors} from '../../lambda.utils'
+import {refreshTokenCookieKey} from '../auth.consts'
+import {AuthRes} from '../auth.types'
+import {getCookieValue} from './utils'
 
 const userPoolClientId = process.env.USER_POOL_CLIENT_ID as string
-const awsRegion = process.env.AWS_REGION as string
-
-const cognitoClient = new CognitoIdentityProviderClient({region: awsRegion})
+const cognitoClient = new CognitoIdentityProviderClient()
 
 export const handler = async ({
                                   headers,
                               }: ApiGatewayEvent): Promise<ApiGatewayLambdaResponse> => {
     const refreshToken = getCookieValue(headers, refreshTokenCookieKey)
     if (!refreshToken) {
-        return {
-            statusCode: 400,
-            body: JSON.stringify({message: `Missing token`})
-        }
+        return resWithCors(400, {message: `Missing token`})
     }
 
     try {
@@ -34,22 +31,13 @@ export const handler = async ({
             },
         }))
         const {IdToken, ExpiresIn, AccessToken} = authResult.AuthenticationResult!
-        return {
-            statusCode: 200,
-            body: JSON.stringify({token: IdToken!, expiresIn: ExpiresIn!, accessToken: AccessToken!} satisfies AuthRes),
-        }
+        return resWithCors(200, {token: IdToken!, expiresIn: ExpiresIn!, accessToken: AccessToken!} satisfies AuthRes)
     } catch (err) {
-        console.error(`Error during refreshing token`, JSON.stringify(err, null, 2))
+        console.error(`Error during refreshing token`, err)
         const {name, message} = err as CognitoIdentityProviderServiceException
         if (err instanceof NotAuthorizedException) {
-            return {
-                statusCode: 401,
-                body: JSON.stringify({message: 'Invalid token'})
-            }
+            return resWithCors(401, {message: 'Invalid token'})
         }
-        return {
-            statusCode: 500,
-            body: JSON.stringify({message: `${name}: ${message}`})
-        }
+        return resWithCors(500, {message: `${name}: ${message}`})
     }
 }

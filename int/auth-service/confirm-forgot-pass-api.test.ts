@@ -1,5 +1,6 @@
 import * as request from 'supertest'
 import { Response } from 'supertest'
+import {corsAllowedHeaders} from '../../lib/auth-service/auth.consts'
 import { deleteUser } from '../aws-helpers'
 import { testAcceptedEmailDomain, testAutoConfirmedEmail } from '../../lib/consts'
 import { testCognitoUserPoolId, testRestApiEndpoint } from '../config'
@@ -20,12 +21,10 @@ describe('Confirm forgot password api tests', () => {
 
         await req.post('api/v1/signup')
             .send(signUpReq)
-            .expect('Content-Type', /json/)
             .expect(200)
 
         await req.post('api/v1/forgot')
             .send({email: signUpReq.email} satisfies ForgotPasswordReq)
-            .expect('Content-Type', /json/)
             .expect(200)
 
         const confirmForgotReq = {
@@ -36,7 +35,11 @@ describe('Confirm forgot password api tests', () => {
 
         await req.post('api/v1/confirm-forgot')
             .send(confirmForgotReq)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toMatch(/Invalid verification code provided, please try again/)
@@ -57,7 +60,11 @@ describe('Confirm forgot password api tests', () => {
 
         await req.post('api/v1/signup')
             .send(signUpReq)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(200)
 
         const confirmForgotReq = {
@@ -68,7 +75,11 @@ describe('Confirm forgot password api tests', () => {
 
         await req.post('api/v1/confirm-forgot')
             .send(confirmForgotReq)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toMatch(/Invalid code provided, please request a code again/)
@@ -89,7 +100,11 @@ describe('Confirm forgot password api tests', () => {
 
         await req.post('api/v1/signup')
             .send(signUpReq)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(200)
 
         const confirmForgotReq = {
@@ -100,7 +115,11 @@ describe('Confirm forgot password api tests', () => {
 
         await req.post('api/v1/confirm-forgot')
             .send(confirmForgotReq)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toMatch(/Invalid code provided, please request a code again/)
@@ -119,7 +138,11 @@ describe('Confirm forgot password api tests', () => {
 
         await req.post('api/v1/confirm-forgot')
             .send(confirmForgotReq)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toMatch(/User not found/)
@@ -134,7 +157,11 @@ describe('Confirm forgot password api tests', () => {
 
         await req.post('api/v1/confirm-forgot')
             .send(confirmForgotReq)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toContain('object has missing required properties')
@@ -151,7 +178,11 @@ describe('Confirm forgot password api tests', () => {
 
         await req.post('api/v1/confirm-forgot')
             .send(confirmForgotReq)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toContain('object instance has properties which are not allowed by the schema')

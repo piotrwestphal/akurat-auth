@@ -1,18 +1,17 @@
-import { ApiGatewayEvent, ApiGatewayLambdaResponse } from '@lambda-types'
 import {
     AdminConfirmSignUpCommand,
     CognitoIdentityProviderClient,
-    CognitoIdentityProviderServiceException
+    CognitoIdentityProviderServiceException,
 } from '@aws-sdk/client-cognito-identity-provider'
-import { AdminConfirmUserReq } from '../../auth-service/auth.types'
+import {ApiGatewayEvent, ApiGatewayLambdaResponse} from '@lambda-types'
+import {AdminConfirmUserReq} from '../../auth-service/auth.types'
+import {resWithCors} from '../../lambda.utils'
 
 const userPoolId = process.env.USER_POOL_ID as string
-const awsRegion = process.env.AWS_REGION as string
-
-const cognitoClient = new CognitoIdentityProviderClient({region: awsRegion})
+const cognitoClient = new CognitoIdentityProviderClient()
 
 export const handler = async ({
-                                  body
+                                  body,
                               }: ApiGatewayEvent): Promise<ApiGatewayLambdaResponse> => {
     const {email} = JSON.parse(body) as AdminConfirmUserReq
     try {
@@ -20,16 +19,10 @@ export const handler = async ({
             Username: email,
             UserPoolId: userPoolId,
         }))
-        return {
-            statusCode: 200,
-            body: JSON.stringify({message: 'The user account has been confirmed'}),
-        }
+        return resWithCors(200, {message: 'The user account has been confirmed'})
     } catch (err) {
-        console.error(`Error during confirming sign up for a user with the email [${email}]`, JSON.stringify(err, null, 2))
+        console.error(`Error during confirming sign up for a user with the email [${email}]`, err)
         const {name, message} = err as CognitoIdentityProviderServiceException
-        return {
-            statusCode: 500,
-            body: JSON.stringify({message: `${name}: ${message}`})
-        }
+        return resWithCors(500, {message: `${name}: ${message}`})
     }
 }

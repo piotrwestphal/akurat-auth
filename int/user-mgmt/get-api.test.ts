@@ -6,7 +6,7 @@ import { randomUUID } from 'crypto'
 import { testAcceptedEmailDomain } from '../../lib/consts'
 import { UserRes } from '../../lib/user-mgmt/user-mgmt.types'
 import { UserStatusType } from '@aws-sdk/client-cognito-identity-provider'
-import { authorizationHeaderKey } from '../../lib/auth-service/auth.consts'
+import {authorizationHeaderKey, corsAllowedHeaders} from '../../lib/auth-service/auth.consts'
 
 describe('Get a user api tests', () => {
 
@@ -24,7 +24,11 @@ describe('Get a user api tests', () => {
 
         await req.get(`api/v1/users/${userSub}`)
             .set(authorizationHeaderKey, defaultUserToken)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(200)
             .then((res: Response) => {
                 const {username, sub, email, emailVerified, enabled, status, createdAt, updatedAt} = res.body as UserRes
@@ -45,12 +49,21 @@ describe('Get a user api tests', () => {
     test('GET "/users/{id}" should not fetch a user with non-existing id', async () => {
         await req.get(`api/v1/users/${randomUUID()}`)
             .set(authorizationHeaderKey, defaultUserToken)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(404)
     })
 
     test('GET "/users/{id}" unauthorized', async () => {
         await req.get(`api/v1/users/${randomUUID()}`)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(401)
             .then((res: Response) => {
                 expect(res.text).toMatch(/Unauthorized/)
@@ -60,6 +73,11 @@ describe('Get a user api tests', () => {
     test('GET "/users/{id}" forbidden', async () => {
         await req.get(`api/v1/users/${randomUUID()}`)
             .set(authorizationHeaderKey, 'mock')
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(401)
             // TODO
             // .expect(403)

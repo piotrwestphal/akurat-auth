@@ -1,5 +1,6 @@
 import * as request from 'supertest'
 import { Response } from 'supertest'
+import {corsAllowedHeaders} from '../../lib/auth-service/auth.consts'
 import { createUser, deleteUser } from '../aws-helpers'
 import { testAcceptedEmailDomain, testAutoConfirmedEmail } from '../../lib/consts'
 import { testCognitoUserPoolId, testRestApiEndpoint } from '../config'
@@ -20,7 +21,11 @@ describe('Signup user api tests', () => {
 
         await req.post('api/v1/signup')
             .send(signUpReq)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(200)
             .then((res: Response) => {
                 const {userSub, userConfirmed, codeDeliveryDetails} = res.body as SignUpRes
@@ -44,6 +49,11 @@ describe('Signup user api tests', () => {
         await createUser(testCognitoUserPoolId, signupReq.email)
         await req.post('api/v1/signup')
             .send(signupReq)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toMatch(/An account with the given email already exists/)
@@ -60,6 +70,11 @@ describe('Signup user api tests', () => {
         }
         await req.post('api/v1/signup')
             .send(loginReq)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toMatch(/Email domain is not accepted/)
@@ -73,6 +88,11 @@ describe('Signup user api tests', () => {
         }
         await req.post('api/v1/signup')
             .send(loginReq)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toMatch(/Password did not conform with policy/)
@@ -86,6 +106,11 @@ describe('Signup user api tests', () => {
         }
         await req.post('api/v1/signup')
             .send(loginReq)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toMatch(/is not a valid email address/)
@@ -99,6 +124,11 @@ describe('Signup user api tests', () => {
 
         await req.post('api/v1/signup')
             .expect(400)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .send(loginReq)
             .then((res: Response) => {
                 expect(res.text).toMatch(/object has missing required properties/)
@@ -114,6 +144,11 @@ describe('Signup user api tests', () => {
 
         await req.post('api/v1/signup')
             .expect(400)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .send(loginReq)
             .then((res: Response) => {
                 expect(res.text).toMatch(/object instance has properties which are not allowed by the schema/)

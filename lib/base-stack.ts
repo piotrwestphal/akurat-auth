@@ -1,12 +1,12 @@
 import {CfnOutput, Stack, StackProps} from 'aws-cdk-lib'
-import {ResponseType, RestApi} from 'aws-cdk-lib/aws-apigateway'
+import {Cors, ResponseType, RestApi} from 'aws-cdk-lib/aws-apigateway'
 import {Certificate} from 'aws-cdk-lib/aws-certificatemanager'
 import {RetentionDays} from 'aws-cdk-lib/aws-logs'
 import {ARecord, HostedZone, RecordTarget} from 'aws-cdk-lib/aws-route53'
 import {ApiGateway} from 'aws-cdk-lib/aws-route53-targets'
 import {Construct} from 'constructs'
 import {AuthService} from './auth-service/auth-service'
-import {setCookieHeaderKey} from './auth-service/auth.consts'
+import {apiGwResponseHeaders, setCookieHeaderKey} from './auth-service/auth.consts'
 import {restApiEndpointOutputKey, userPoolClientIdOutputKey, userPoolIdOutputKey} from './consts'
 import {ApiParams, UserMgmtParams} from './types'
 import {UserMgmt} from './user-mgmt/user-mgmt'
@@ -15,18 +15,19 @@ import {UserMgmt} from './user-mgmt/user-mgmt'
 type BaseStackProps = Readonly<{
     envName: string
     userMgmt: UserMgmtParams
-    logRetention: RetentionDays
     authApi?: ApiParams
+    disableUsersApi?: true
+    logRetention: RetentionDays
 }> & StackProps
 
-// TODO: export user pool arn to be used by core stack
 export class BaseStack extends Stack {
     constructor(scope: Construct,
                 id: string,
                 {
                     envName,
-                    authApi,
                     userMgmt,
+                    authApi,
+                    disableUsersApi,
                     logRetention,
                     ...props
                 }: BaseStackProps) {
@@ -34,18 +35,34 @@ export class BaseStack extends Stack {
 
         const baseDomainName = this.node.tryGetContext('domainName') as string | undefined
 
-        const restApi = new RestApi(this, 'RestApi', {
+        const restApi = new RestApi(this, 'AuthApi', {
             description: `[${envName}] REST api for auth service`,
             deployOptions: {
                 stageName: envName,
             },
+            defaultCorsPreflightOptions: {
+                allowHeaders: ['Content-Type', 'Authorization', setCookieHeaderKey],
+                allowMethods: ['OPTIONS', 'GET', 'POST'],
+                allowCredentials: true,
+                allowOrigins: Cors.ALL_ORIGINS,
+            },
         })
-        // adds extended request body validation messages
         restApi.addGatewayResponse('BadRequestBodyValidationTemplate', {
-            type: ResponseType.BAD_REQUEST_BODY,
             statusCode: '400',
+            type: ResponseType.BAD_REQUEST_BODY,
+            responseHeaders: apiGwResponseHeaders,
             templates: {
+                // adds extended request body validation messages
                 'application/json': `{"message": "$context.error.validationErrorString"}`,
+            },
+        })
+        restApi.addGatewayResponse('AuthorizerFailureTemplate', {
+            statusCode: '401',
+            type: ResponseType.UNAUTHORIZED,
+            responseHeaders: apiGwResponseHeaders,
+            templates: {
+                // adds extended request body validation messages
+                'application/json': `{"message": "$context.error.message"}`,
             },
         })
 
@@ -54,6 +71,7 @@ export class BaseStack extends Stack {
             envName,
             restApiV1Resource,
             userMgmt,
+            disableUsersApi,
             logRetention,
         })
 
@@ -68,13 +86,6 @@ export class BaseStack extends Stack {
             const {domainPrefix, apiPrefix, certArn} = authApi
             const fullDomainName = domainPrefix ? `${domainPrefix}.${baseDomainName}` : baseDomainName
             const domainName = `${apiPrefix}.${fullDomainName}`
-
-            restApiV1Resource.addCorsPreflight({
-                allowHeaders: ['Content-Type', 'Authorization', setCookieHeaderKey],
-                allowMethods: ['OPTIONS', 'GET', 'POST'],
-                allowCredentials: true,
-                allowOrigins: [`https://${fullDomainName}`],
-            })
             const hostedZone = HostedZone.fromLookup(this, 'HostedZone', {domainName: baseDomainName})
             restApi.addDomainName('DomainName', {
                 domainName,

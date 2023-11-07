@@ -1,35 +1,31 @@
-import { ApiGatewayEvent, ApiGatewayLambdaResponse } from '@lambda-types'
 import {
     CodeMismatchException,
     CognitoIdentityProviderClient,
     CognitoIdentityProviderServiceException,
     ConfirmSignUpCommand,
     NotAuthorizedException,
-    UserNotFoundException
+    UserNotFoundException,
 } from '@aws-sdk/client-cognito-identity-provider'
-import { ConfirmSignupReq } from '../auth.types'
+import {ApiGatewayEvent, ApiGatewayLambdaResponse} from '@lambda-types'
+import {resWithCors} from '../../lambda.utils'
+import {ConfirmSignupReq} from '../auth.types'
 
 const userPoolClientId = process.env.USER_POOL_CLIENT_ID as string
-const awsRegion = process.env.AWS_REGION as string
-
-const cognitoClient = new CognitoIdentityProviderClient({region: awsRegion})
+const cognitoClient = new CognitoIdentityProviderClient()
 
 export const handler = async ({
-                                  body
+                                  body,
                               }: ApiGatewayEvent): Promise<ApiGatewayLambdaResponse> => {
     const {email, confirmationCode} = JSON.parse(body) as ConfirmSignupReq
     try {
         await cognitoClient.send(new ConfirmSignUpCommand({
             ClientId: userPoolClientId,
             Username: email,
-            ConfirmationCode: confirmationCode
+            ConfirmationCode: confirmationCode,
         }))
-        return {
-            statusCode: 200,
-            body: JSON.stringify({message: 'The user account has been confirmed'}),
-        }
+        return resWithCors(200, {message: 'The user account has been confirmed'})
     } catch (err) {
-        console.error(`Error during fetching users`, JSON.stringify(err, null, 2))
+        console.error(`Error during fetching users`, err)
         const {name, message} = err as CognitoIdentityProviderServiceException
         if (err instanceof UserNotFoundException) {
             return badRequest(err)
@@ -40,14 +36,9 @@ export const handler = async ({
         if (err instanceof CodeMismatchException) {
             return badRequest(err)
         }
-        return {
-            statusCode: 500,
-            body: JSON.stringify({message: `${name}: ${message}`})
-        }
+        return resWithCors(500, {message: `${name}: ${message}`})
     }
 }
 
-const badRequest = (err: CognitoIdentityProviderServiceException) => ({
-    statusCode: 400,
-    body: JSON.stringify({message: err.message})
-})
+const badRequest = (err: CognitoIdentityProviderServiceException) =>
+    resWithCors(400, {message: err.message})

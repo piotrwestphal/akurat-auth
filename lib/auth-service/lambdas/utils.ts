@@ -1,4 +1,4 @@
-import { cookieHeaderKey } from '../auth.consts'
+import {cookieHeaderKey} from '../auth.consts'
 
 export const getCookieValue = (headers: Record<string, string>, key: string) => {
     if (!headers[cookieHeaderKey]) {

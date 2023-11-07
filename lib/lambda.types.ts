@@ -25,5 +25,5 @@ export type ApiGatewayEvent = Readonly<{
 export type ApiGatewayLambdaResponse = Readonly<{
     statusCode: number
     body?: string
-    headers?: Record<string, string>
+    headers?: Record<string, string | boolean>
 }>

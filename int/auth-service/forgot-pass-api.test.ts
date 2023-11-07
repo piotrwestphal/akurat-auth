@@ -1,5 +1,6 @@
 import * as request from 'supertest'
 import { Response } from 'supertest'
+import {corsAllowedHeaders} from '../../lib/auth-service/auth.consts'
 import { testAcceptedEmailDomain, testAutoConfirmedEmail } from '../../lib/consts'
 import { testCognitoUserPoolId, testRestApiEndpoint } from '../config'
 import { AuthReq, ForgotPasswordReq, ForgotPasswordRes } from '../../lib/auth-service/auth.types'
@@ -20,12 +21,15 @@ describe('Forgot password api tests', () => {
 
         await req.post('api/v1/signup')
             .send(signUpReq)
-            .expect('Content-Type', /json/)
             .expect(200)
 
         await req.post('api/v1/forgot')
             .send({email: signUpReq.email} satisfies ForgotPasswordReq)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(200)
             .then((res: Response) => {
                 const {codeDeliveryDetails} = res.body as ForgotPasswordRes
@@ -48,12 +52,15 @@ describe('Forgot password api tests', () => {
 
         await req.post('api/v1/signup')
             .send(signUpReq)
-            .expect('Content-Type', /json/)
             .expect(200)
 
         await req.post('api/v1/forgot')
             .send({email: signUpReq.email} satisfies ForgotPasswordReq)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toMatch(/Cannot reset password for the user as there is no registered\/verified email or phone_number/)
@@ -66,7 +73,11 @@ describe('Forgot password api tests', () => {
     test('POST "/forgot" should not accept if user not found', async () => {
         await req.post('api/v1/forgot')
             .send({email: `nonexistinguser@${testAcceptedEmailDomain}`} satisfies ForgotPasswordReq)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toMatch(/User not found/)
@@ -76,7 +87,11 @@ describe('Forgot password api tests', () => {
     test('POST "/forgot" should not accept because of the missing field', async () => {
         await req.post('api/v1/forgot')
             .send({})
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toContain('object has missing required properties')
@@ -86,7 +101,11 @@ describe('Forgot password api tests', () => {
     test('POST "/forgot" should not accept because of the extra field', async () => {
         await req.post('api/v1/forgot')
             .send({email: `someuser@${testAcceptedEmailDomain}`, extra: 'value'} as ForgotPasswordReq)
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', 'application/json')
+            .expect('Access-Control-Allow-Origin', '*')
+            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
+            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
+            .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toContain('object instance has properties which are not allowed by the schema')

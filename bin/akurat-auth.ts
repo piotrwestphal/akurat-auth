@@ -17,6 +17,7 @@ new BaseStack(app, 'dev-AkuratAuthStack', {
         domainPrefix: 'dev',
         apiPrefix: 'auth',
         certArn: 'arn:aws:acm:eu-central-1:412644677543:certificate/a4333aff-4aed-4a57-9100-0d2355ad55fd',
+        userPoolIdParamName: 'akurat/auth-service/dev/user-pool-id',
     },
     userMgmt: {
         adminUsers: [
@@ -50,7 +51,9 @@ new BaseStack(app, 'prod-AkuratAuthStack', {
     authApi: {
         apiPrefix: 'auth',
         certArn: 'arn:aws:acm:eu-central-1:412644677543:certificate/2fc15cbf-9c03-4a7e-99d4-a778a3a55e09',
+        userPoolIdParamName: 'akurat/auth-service/prod/user-pool-id',
     },
     userMgmt: {adminUsers: [], autoConfirmedEmails: [], acceptedEmailDomains: ['*']},
+    disableUsersApi: true,
     logRetention: RetentionDays.ONE_MONTH,
 })
