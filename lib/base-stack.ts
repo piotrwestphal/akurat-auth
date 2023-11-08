@@ -4,6 +4,7 @@ import {Certificate} from 'aws-cdk-lib/aws-certificatemanager'
 import {RetentionDays} from 'aws-cdk-lib/aws-logs'
 import {ARecord, HostedZone, RecordTarget} from 'aws-cdk-lib/aws-route53'
 import {ApiGateway} from 'aws-cdk-lib/aws-route53-targets'
+import {StringParameter} from 'aws-cdk-lib/aws-ssm'
 import {Construct} from 'constructs'
 import {AuthService} from './auth-service/auth-service'
 import {apiGwResponseHeaders, setCookieHeaderKey} from './auth-service/auth.consts'
@@ -83,10 +84,14 @@ export class BaseStack extends Stack {
         })
 
         if (baseDomainName && authApi) {
-            const {domainPrefix, apiPrefix, certArn} = authApi
+            const {domainPrefix, apiPrefix, certArn, userPoolIdParamName} = authApi
             const fullDomainName = domainPrefix ? `${domainPrefix}.${baseDomainName}` : baseDomainName
             const domainName = `${apiPrefix}.${fullDomainName}`
             const hostedZone = HostedZone.fromLookup(this, 'HostedZone', {domainName: baseDomainName})
+            new StringParameter(this, 'UserPoolIdParam', {
+                parameterName: userPoolIdParamName,
+                stringValue: userPool.userPoolId,
+            })
             restApi.addDomainName('DomainName', {
                 domainName,
                 certificate: Certificate.fromCertificateArn(this, 'CFCertificate', certArn),
