@@ -12,10 +12,10 @@ export const apiGwResponseHeaders = {
     'Access-Control-Allow-Origin': "'*'",
     'Access-Control-Allow-Credentials': "'true'",
 }
-export const corsHeaders = {
+export const corsHeaders = (origin: string) => ({
     'Content-Type': 'application/json',
     'Access-Control-Allow-Headers': corsAllowedHeaders,
     'Access-Control-Allow-Methods': 'OPTIONS,GET,POST',
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Credentials': true,
-}
+})

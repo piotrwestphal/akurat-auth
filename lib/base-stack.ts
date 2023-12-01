@@ -16,6 +16,8 @@ import {UserMgmt} from './user-mgmt/user-mgmt'
 type BaseStackProps = Readonly<{
     envName: string
     userMgmt: UserMgmtParams
+    baseDomainName?: string
+    domainPrefix?: string
     authApi?: ApiParams
     disableUsersApi?: true
     logRetention: RetentionDays
@@ -27,14 +29,14 @@ export class BaseStack extends Stack {
                 {
                     envName,
                     userMgmt,
+                    baseDomainName,
+                    domainPrefix,
                     authApi,
                     disableUsersApi,
                     logRetention,
                     ...props
                 }: BaseStackProps) {
         super(scope, id, props)
-
-        const baseDomainName = this.node.tryGetContext('domainName') as string | undefined
 
         const restApi = new RestApi(this, 'AuthApi', {
             description: `[${envName}] REST api for auth service`,
@@ -76,6 +78,8 @@ export class BaseStack extends Stack {
             logRetention,
         })
 
+        const fullDomainName = domainPrefix ? `${domainPrefix}.${baseDomainName}` : baseDomainName
+
         const {userPoolClientId} = new AuthService(this, 'AuthService', {
             restApi,
             restApiV1Resource,
@@ -84,21 +88,20 @@ export class BaseStack extends Stack {
             logRetention,
         })
 
-        if (baseDomainName && authApi) {
-            const {domainPrefix, apiPrefix, certArn, userPoolIdParamName} = authApi
-            const fullDomainName = domainPrefix ? `${domainPrefix}.${baseDomainName}` : baseDomainName
-            const domainName = `${apiPrefix}.${fullDomainName}`
+        if (baseDomainName && fullDomainName && authApi) {
+            const {apiPrefix, certArn, userPoolIdParamName} = authApi
+            const apiDomainName = `${apiPrefix}.${fullDomainName}`
             const hostedZone = HostedZone.fromLookup(this, 'HostedZone', {domainName: baseDomainName})
             new StringParameter(this, 'UserPoolIdParam', {
                 parameterName: userPoolIdParamName,
                 stringValue: userPool.userPoolId,
             })
             restApi.addDomainName('DomainName', {
-                domainName,
+                domainName: apiDomainName,
                 certificate: Certificate.fromCertificateArn(this, 'CFCertificate', certArn),
             })
             new ARecord(this, 'AuthServiceRecordSet', {
-                recordName: domainName,
+                recordName: apiDomainName,
                 zone: hostedZone,
                 target: RecordTarget.fromAlias(new ApiGateway(restApi)),
             })

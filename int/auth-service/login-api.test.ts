@@ -39,6 +39,7 @@ describe('User login api tests', () => {
                 const setCookieHeader = setCookieHeaderVals[0] as string
                 expect(setCookieHeader).toBeDefined()
                 expect(setCookieHeader).toContain(`${refreshTokenCookieKey}=`)
+                expect(setCookieHeader).toContain('Domain=;')
                 expect(setCookieHeader).toContain('SameSite=None;')
                 expect(setCookieHeader).toContain('Secure;')
                 expect(setCookieHeader).toContain('HttpOnly;')
