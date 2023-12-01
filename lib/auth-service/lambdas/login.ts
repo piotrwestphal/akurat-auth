@@ -44,7 +44,7 @@ export const handler = async ({
                 {
                     [setCookieHeaderKey]: `${refreshTokenCookieKey}=${RefreshToken}; Domain=${domainName}; SameSite=None; Secure; HttpOnly; Path=/; Max-Age=${refreshTokenValidityDurationSeconds};`,
                 },
-                domainName)
+                `https://${domainName}`)
         }
         return errorResponse
     } catch (err) {

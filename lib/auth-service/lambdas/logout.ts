@@ -9,7 +9,7 @@ export const handler = async (_: ApiGatewayEvent): Promise<ApiGatewayLambdaRespo
             200,
             {message: 'User has been logged out'},
             {[setCookieHeaderKey]: `${refreshTokenCookieKey}=x; Domain=${domainName}; SameSite=None; Secure; HttpOnly; Path=/; Max-Age=0;`},
-            domainName)
+            `https://${domainName}`)
     } catch (err) {
         console.error(`Error during logging out a user`, err)
         const {name, message} = err as Error
