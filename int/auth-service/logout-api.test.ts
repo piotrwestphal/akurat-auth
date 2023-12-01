@@ -20,7 +20,7 @@ describe('User logout api tests', () => {
                 const setCookieHeader = setCookieHeaderVals[0] as string
                 expect(setCookieHeader).toBeDefined()
                 expect(setCookieHeader).toContain(`${refreshTokenCookieKey}=x`)
-                expect(setCookieHeader).toContain('SameSite=Strict;')
+                expect(setCookieHeader).toContain('SameSite=None;')
                 expect(setCookieHeader).toContain('Secure;')
                 expect(setCookieHeader).toContain('HttpOnly;')
                 expect(setCookieHeader).toContain(`Max-Age=0;`)

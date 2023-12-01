@@ -41,7 +41,7 @@ export const handler = async ({
                     accessToken: AccessToken!,
                 } satisfies AuthRes,
                 {
-                    [setCookieHeaderKey]: `${refreshTokenCookieKey}=${RefreshToken}; SameSite=Strict; Secure; HttpOnly; Path=/; Max-Age=${refreshTokenValidityDurationSeconds};`,
+                    [setCookieHeaderKey]: `${refreshTokenCookieKey}=${RefreshToken}; SameSite=None; Secure; HttpOnly; Path=/; Max-Age=${refreshTokenValidityDurationSeconds};`,
                 })
         }
         return errorResponse
