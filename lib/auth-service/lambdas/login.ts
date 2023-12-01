@@ -13,6 +13,7 @@ import {refreshTokenCookieKey, refreshTokenValidityDurationDays, setCookieHeader
 import {AuthReq, AuthRes} from '../auth.types'
 
 const userPoolClientId = process.env.USER_POOL_CLIENT_ID as string
+const domainName = process.env.DOMAIN_NAME as string
 
 const cognitoClient = new CognitoIdentityProviderClient()
 const refreshTokenValidityDurationSeconds = refreshTokenValidityDurationDays * 24 * 60 * 60
@@ -41,7 +42,7 @@ export const handler = async ({
                     accessToken: AccessToken!,
                 } satisfies AuthRes,
                 {
-                    [setCookieHeaderKey]: `${refreshTokenCookieKey}=${RefreshToken}; SameSite=None; Secure; HttpOnly; Path=/; Max-Age=${refreshTokenValidityDurationSeconds};`,
+                    [setCookieHeaderKey]: `${refreshTokenCookieKey}=${RefreshToken}; Domain=${domainName}; SameSite=None; Secure; HttpOnly; Path=/; Max-Age=${refreshTokenValidityDurationSeconds};`,
                 })
         }
         return errorResponse

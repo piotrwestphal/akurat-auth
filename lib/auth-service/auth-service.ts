@@ -17,6 +17,7 @@ type AuthProps = Readonly<{
     restApiV1Resource: Resource
     userPool: UserPool
     logRetention: RetentionDays
+    domainName?: string
 }>
 
 export class AuthService extends Construct {
@@ -30,6 +31,7 @@ export class AuthService extends Construct {
                     restApiV1Resource,
                     userPool,
                     logRetention,
+                    domainName,
                 }: AuthProps) {
         super(scope, id)
 
@@ -44,6 +46,7 @@ export class AuthService extends Construct {
             ...globalCommonLambdaProps,
             environment: {
                 USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId,
+                DOMAIN_NAME: domainName || ''
             },
             logRetention,
         }

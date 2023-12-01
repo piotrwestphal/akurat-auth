@@ -80,6 +80,7 @@ export class BaseStack extends Stack {
             restApi,
             restApiV1Resource,
             userPool,
+            domainName: baseDomainName,
             logRetention,
         })
 
