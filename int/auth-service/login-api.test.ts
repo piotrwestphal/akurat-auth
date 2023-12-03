@@ -1,7 +1,6 @@
 import * as request from 'supertest'
 import {Response} from 'supertest'
 import {
-    corsAllowedHeaders,
     refreshTokenCookieKey,
     refreshTokenValidityDurationDays,
     setCookieHeaderKey,
@@ -25,9 +24,8 @@ describe('User login api tests', () => {
             .send(loginReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
+            .expect('Vary', 'origin')
             .expect(200)
             .then((res: Response) => {
                 const {token, expiresIn, accessToken} = res.body as AuthRes
@@ -59,9 +57,8 @@ describe('User login api tests', () => {
             .send(loginReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
+            .expect('Vary', 'origin')
             .expect(409)
             .then((res: Response) => {
                 expect(res.text).toMatch(/User is not confirmed/)
@@ -80,9 +77,8 @@ describe('User login api tests', () => {
             .send(loginReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
+            .expect('Vary', 'origin')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toMatch(/Incorrect username or password/)
@@ -98,9 +94,8 @@ describe('User login api tests', () => {
             .send(loginReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
+            .expect('Vary', 'origin')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toMatch(/is not a valid email address/)
@@ -116,9 +111,8 @@ describe('User login api tests', () => {
             .send(loginReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
+            .expect('Vary', 'origin')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toMatch(/Incorrect username or password/)
@@ -134,9 +128,8 @@ describe('User login api tests', () => {
             .send(loginReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
+            .expect('Vary', 'origin')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toContain('object has missing required properties')
@@ -154,9 +147,8 @@ describe('User login api tests', () => {
             .send(loginReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
+            .expect('Vary', 'origin')
             .expect(400)
             .then((res: Response) => {
                 expect(res.text).toContain('object instance has properties which are not allowed by the schema')

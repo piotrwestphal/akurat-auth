@@ -17,11 +17,11 @@ const cognitoClient = new CognitoIdentityProviderClient()
 export const handler = async ({
                                   headers,
                               }: ApiGatewayEvent): Promise<ApiGatewayLambdaResponse> => {
+    const {origin} = headers
     const refreshToken = getCookieValue(headers, refreshTokenCookieKey)
     if (!refreshToken) {
-        return resWithCors(400, {message: `Missing token`})
+        return resWithCors(400, {message: `Missing token`}, {}, origin)
     }
-
     try {
         const authResult = await cognitoClient.send(new InitiateAuthCommand({
             AuthFlow: AuthFlowType.REFRESH_TOKEN_AUTH,
@@ -31,13 +31,21 @@ export const handler = async ({
             },
         }))
         const {IdToken, ExpiresIn, AccessToken} = authResult.AuthenticationResult!
-        return resWithCors(200, {token: IdToken!, expiresIn: ExpiresIn!, accessToken: AccessToken!} satisfies AuthRes)
+        return resWithCors(
+            200,
+            {
+                token: IdToken!,
+                expiresIn: ExpiresIn!,
+                accessToken: AccessToken!,
+            } satisfies AuthRes,
+            {},
+            origin)
     } catch (err) {
         console.error(`Error during refreshing token`, err)
         const {name, message} = err as CognitoIdentityProviderServiceException
         if (err instanceof NotAuthorizedException) {
-            return resWithCors(401, {message: 'Invalid token'})
+            return resWithCors(401, {message: 'Invalid token'}, {}, origin)
         }
-        return resWithCors(500, {message: `${name}: ${message}`})
+        return resWithCors(500, {message: `${name}: ${message}`}, {}, origin)
     }
 }

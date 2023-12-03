@@ -1,12 +1,12 @@
+import {UserStatusType} from '@aws-sdk/client-cognito-identity-provider'
+import {randomUUID} from 'crypto'
 import * as request from 'supertest'
-import { Response } from 'supertest'
-import { testCognitoUserPoolId, defaultUserToken, testRestApiEndpoint } from '../config'
-import { createUser, deleteUser } from '../aws-helpers'
-import { randomUUID } from 'crypto'
-import { testAcceptedEmailDomain } from '../../lib/consts'
-import { UserRes } from '../../lib/user-mgmt/user-mgmt.types'
-import { UserStatusType } from '@aws-sdk/client-cognito-identity-provider'
-import {authorizationHeaderKey, corsAllowedHeaders} from '../../lib/auth-service/auth.consts'
+import {Response} from 'supertest'
+import {authorizationHeaderKey} from '../../lib/auth-service/auth.consts'
+import {testAcceptedEmailDomain} from '../../lib/consts'
+import {UserRes} from '../../lib/user-mgmt/user-mgmt.types'
+import {createUser, deleteUser} from '../aws-helpers'
+import {defaultUserToken, testCognitoUserPoolId, testRestApiEndpoint} from '../config'
 
 describe('Get a user api tests', () => {
 
@@ -26,8 +26,6 @@ describe('Get a user api tests', () => {
             .set(authorizationHeaderKey, defaultUserToken)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(200)
             .then((res: Response) => {
@@ -51,8 +49,6 @@ describe('Get a user api tests', () => {
             .set(authorizationHeaderKey, defaultUserToken)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(404)
     })
@@ -61,8 +57,6 @@ describe('Get a user api tests', () => {
         await req.get(`api/v1/users/${randomUUID()}`)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(401)
             .then((res: Response) => {
@@ -75,8 +69,6 @@ describe('Get a user api tests', () => {
             .set(authorizationHeaderKey, 'mock')
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(401)
             // TODO

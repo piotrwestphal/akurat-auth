@@ -15,7 +15,6 @@ export type ApiParams = Readonly<{
     apiPrefix: string
     certArn: string
     userPoolIdParamName: string
-    domainPrefix?: string
 }>
 
 export type CdkOutputs = Readonly<{

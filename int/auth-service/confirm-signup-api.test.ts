@@ -1,6 +1,5 @@
 import * as request from 'supertest'
 import {Response} from 'supertest'
-import {corsAllowedHeaders} from '../../lib/auth-service/auth.consts'
 import {ConfirmSignupReq} from '../../lib/auth-service/auth.types'
 import {testAcceptedEmailDomain, testAutoConfirmedEmail} from '../../lib/consts'
 import {deleteUser, registerUser} from '../aws-helpers'
@@ -26,8 +25,6 @@ describe('Confirm user signup api tests', () => {
             .send(confirmSignupReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
@@ -48,8 +45,6 @@ describe('Confirm user signup api tests', () => {
             .send(confirmSignupReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
@@ -70,8 +65,6 @@ describe('Confirm user signup api tests', () => {
             .send(confirmSignupReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
@@ -91,8 +84,6 @@ describe('Confirm user signup api tests', () => {
             .send(confirmSignupReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
@@ -109,8 +100,6 @@ describe('Confirm user signup api tests', () => {
             .send(confirmSignupReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
@@ -129,8 +118,6 @@ describe('Confirm user signup api tests', () => {
             .send(confirmSignupReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
