@@ -3,7 +3,12 @@ import * as cdk from 'aws-cdk-lib'
 import {RetentionDays} from 'aws-cdk-lib/aws-logs'
 import 'source-map-support/register'
 import {BaseStack} from '../lib/base-stack'
-import {testAcceptedEmailDomain, testAdminEmail, testAdminPassword, testAutoConfirmedEmail} from '../lib/consts'
+import {
+    testAcceptedEmailDomain,
+    testAdminEmail,
+    testAdminPassword,
+    testAutoConfirmedEmail,
+} from '../lib/consts'
 
 // when triggered on the GH actions it gives a unique name for the current PR
 const cdkTestStackName = process.env.CDK_STACK_NAME as string || 'AkuratAuthStack'
@@ -13,6 +18,7 @@ new BaseStack(app, 'dev-AkuratAuthStack', {
     description: '[dev] Auth service infrastructure for the Akurat App',
     env: {account: '412644677543', region: 'eu-central-1'},
     envName: 'dev',
+    additionalAllowedOrigins: ['http://localhost:5173'],
     baseDomainName: app.node.tryGetContext('domainName') as string,
     domainPrefix: 'dev',
     authApi: {

@@ -1,10 +1,9 @@
 import * as request from 'supertest'
-import { Response } from 'supertest'
-import {corsAllowedHeaders} from '../../lib/auth-service/auth.consts'
-import { testAcceptedEmailDomain, testAutoConfirmedEmail } from '../../lib/consts'
-import { testCognitoUserPoolId, testRestApiEndpoint } from '../config'
-import { AuthReq, ForgotPasswordReq, ForgotPasswordRes } from '../../lib/auth-service/auth.types'
-import { deleteUser } from '../aws-helpers'
+import {Response} from 'supertest'
+import {AuthReq, ForgotPasswordReq, ForgotPasswordRes} from '../../lib/auth-service/auth.types'
+import {testAcceptedEmailDomain, testAutoConfirmedEmail} from '../../lib/consts'
+import {deleteUser} from '../aws-helpers'
+import {testCognitoUserPoolId, testRestApiEndpoint} from '../config'
 
 describe('Forgot password api tests', () => {
 
@@ -27,8 +26,6 @@ describe('Forgot password api tests', () => {
             .send({email: signUpReq.email} satisfies ForgotPasswordReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(200)
             .then((res: Response) => {
@@ -58,8 +55,6 @@ describe('Forgot password api tests', () => {
             .send({email: signUpReq.email} satisfies ForgotPasswordReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
@@ -75,8 +70,6 @@ describe('Forgot password api tests', () => {
             .send({email: `nonexistinguser@${testAcceptedEmailDomain}`} satisfies ForgotPasswordReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
@@ -89,8 +82,6 @@ describe('Forgot password api tests', () => {
             .send({})
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
@@ -103,8 +94,6 @@ describe('Forgot password api tests', () => {
             .send({email: `someuser@${testAcceptedEmailDomain}`, extra: 'value'} as ForgotPasswordReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {

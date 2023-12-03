@@ -13,13 +13,12 @@ import {refreshTokenCookieKey, refreshTokenValidityDurationDays, setCookieHeader
 import {AuthReq, AuthRes} from '../auth.types'
 
 const userPoolClientId = process.env.USER_POOL_CLIENT_ID as string
-const domainName = process.env.DOMAIN_NAME as string
-
 const cognitoClient = new CognitoIdentityProviderClient()
 const refreshTokenValidityDurationSeconds = refreshTokenValidityDurationDays * 24 * 60 * 60
 
 export const handler = async ({
                                   body,
+                                  headers: {origin},
                               }: ApiGatewayEvent): Promise<ApiGatewayLambdaResponse> => {
     const {email, password} = JSON.parse(body) as AuthReq
     try {
@@ -42,26 +41,26 @@ export const handler = async ({
                     accessToken: AccessToken!,
                 } satisfies AuthRes,
                 {
-                    [setCookieHeaderKey]: `${refreshTokenCookieKey}=${RefreshToken}; Domain=${domainName}; SameSite=None; Secure; HttpOnly; Path=/; Max-Age=${refreshTokenValidityDurationSeconds};`,
+                    [setCookieHeaderKey]: `${refreshTokenCookieKey}=${RefreshToken}; SameSite=None; Secure; HttpOnly; Path=/; Max-Age=${refreshTokenValidityDurationSeconds};`,
                 },
-                `https://${domainName}`)
+                origin)
         }
-        return errorResponse
+        return errorResponse(400, `Incorrect username or password`, origin)
     } catch (err) {
         console.error(`Error during logging in a user with the email [${email}]`, err)
         if (err instanceof UserNotConfirmedException) {
-            return resWithCors(409, {message: `User is not confirmed`})
+            return errorResponse(409, `User is not confirmed`, origin)
         }
         if (err instanceof NotAuthorizedException) {
-            return errorResponse
+            return errorResponse(400, `Incorrect username or password`, origin)
         }
         if (err instanceof UserNotFoundException) {
-            return errorResponse
+            return errorResponse(400, `Incorrect username or password`, origin)
         }
         const {name, message} = err as CognitoIdentityProviderServiceException
-        return resWithCors(500, {message: `${name}: ${message}`})
+        return errorResponse(500, `${name}: ${message}`, origin)
     }
 }
 
-const errorResponse =
-    resWithCors(400, {message: `Incorrect username or password`})
+const errorResponse = (statusCode: number, message: string, origin?: string) =>
+    resWithCors(statusCode, {message}, {}, origin)

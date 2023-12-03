@@ -1,10 +1,9 @@
 import * as request from 'supertest'
-import { Response } from 'supertest'
-import {corsAllowedHeaders} from '../../lib/auth-service/auth.consts'
-import { createUser, deleteUser } from '../aws-helpers'
-import { testAcceptedEmailDomain, testAutoConfirmedEmail } from '../../lib/consts'
-import { testCognitoUserPoolId, testRestApiEndpoint } from '../config'
-import { AuthReq, SignUpRes } from '../../lib/auth-service/auth.types'
+import {Response} from 'supertest'
+import {AuthReq, SignUpRes} from '../../lib/auth-service/auth.types'
+import {testAcceptedEmailDomain, testAutoConfirmedEmail} from '../../lib/consts'
+import {createUser, deleteUser} from '../aws-helpers'
+import {testCognitoUserPoolId, testRestApiEndpoint} from '../config'
 
 describe('Signup user api tests', () => {
 
@@ -23,8 +22,6 @@ describe('Signup user api tests', () => {
             .send(signUpReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(200)
             .then((res: Response) => {
@@ -51,8 +48,6 @@ describe('Signup user api tests', () => {
             .send(signupReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
@@ -72,8 +67,6 @@ describe('Signup user api tests', () => {
             .send(loginReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
@@ -90,8 +83,6 @@ describe('Signup user api tests', () => {
             .send(loginReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
@@ -108,8 +99,6 @@ describe('Signup user api tests', () => {
             .send(loginReq)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .expect(400)
             .then((res: Response) => {
@@ -126,8 +115,6 @@ describe('Signup user api tests', () => {
             .expect(400)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .send(loginReq)
             .then((res: Response) => {
@@ -139,15 +126,13 @@ describe('Signup user api tests', () => {
         const loginReq = {
             email: `Lech@${testAcceptedEmailDomain}`,
             password: 'Wałęsa',
-            hack: 'let me in'
+            hack: 'let me in',
         } as AuthReq
 
         await req.post('api/v1/signup')
             .expect(400)
             .expect('Content-Type', 'application/json')
             .expect('Access-Control-Allow-Origin', '*')
-            .expect('Access-Control-Allow-Methods', 'OPTIONS,GET,POST')
-            .expect('Access-Control-Allow-Headers', corsAllowedHeaders)
             .expect('Access-Control-Allow-Credentials', 'true')
             .send(loginReq)
             .then((res: Response) => {

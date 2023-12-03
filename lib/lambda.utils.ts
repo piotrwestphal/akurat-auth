@@ -1,5 +1,4 @@
 import {ApiGatewayLambdaResponse} from '@lambda-types'
-import {corsHeaders} from './auth-service/auth.consts'
 
 export const resWithCors = (statusCode: number,
                             body: Record<any, any>,
@@ -8,7 +7,9 @@ export const resWithCors = (statusCode: number,
     statusCode,
     body: JSON.stringify(body),
     headers: {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Credentials': true,
+        'Vary': 'origin',
         ...headers,
-        ...corsHeaders(origin),
     },
 })

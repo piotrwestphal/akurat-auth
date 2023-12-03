@@ -1,5 +1,5 @@
 import {CfnOutput, Stack, StackProps} from 'aws-cdk-lib'
-import {Cors, ResponseType, RestApi} from 'aws-cdk-lib/aws-apigateway'
+import {ResponseType, RestApi} from 'aws-cdk-lib/aws-apigateway'
 import {Certificate} from 'aws-cdk-lib/aws-certificatemanager'
 import {RetentionDays} from 'aws-cdk-lib/aws-logs'
 import {ARecord, HostedZone, RecordTarget} from 'aws-cdk-lib/aws-route53'
@@ -7,7 +7,7 @@ import {ApiGateway} from 'aws-cdk-lib/aws-route53-targets'
 import {StringParameter} from 'aws-cdk-lib/aws-ssm'
 import {Construct} from 'constructs'
 import {AuthService} from './auth-service/auth-service'
-import {apiGwResponseHeaders, setCookieHeaderKey} from './auth-service/auth.consts'
+import {apiGwResponseHeaders, corsAllowedHeaders} from './auth-service/auth.consts'
 import {restApiEndpointOutputKey, userPoolClientIdOutputKey, userPoolIdOutputKey} from './consts'
 import {ApiParams, UserMgmtParams} from './types'
 import {UserMgmt} from './user-mgmt/user-mgmt'
@@ -18,6 +18,7 @@ type BaseStackProps = Readonly<{
     userMgmt: UserMgmtParams
     baseDomainName?: string
     domainPrefix?: string
+    additionalAllowedOrigins?: string[]
     authApi?: ApiParams
     disableUsersApi?: true
     logRetention: RetentionDays
@@ -32,11 +33,18 @@ export class BaseStack extends Stack {
                     baseDomainName,
                     domainPrefix,
                     authApi,
+                    additionalAllowedOrigins,
                     disableUsersApi,
                     logRetention,
                     ...props
                 }: BaseStackProps) {
         super(scope, id, props)
+
+        const fullDomainName = domainPrefix ? `${domainPrefix}.${baseDomainName}` : baseDomainName
+        const allowOrigins = (additionalAllowedOrigins || [])
+        if (fullDomainName) {
+            allowOrigins.push(`https://${fullDomainName}`)
+        }
 
         const restApi = new RestApi(this, 'AuthApi', {
             description: `[${envName}] REST api for auth service`,
@@ -44,10 +52,10 @@ export class BaseStack extends Stack {
                 stageName: envName,
             },
             defaultCorsPreflightOptions: {
-                allowHeaders: ['Content-Type', 'Authorization', setCookieHeaderKey],
+                allowHeaders: corsAllowedHeaders,
                 allowMethods: ['OPTIONS', 'GET', 'POST'],
+                allowOrigins: allowOrigins.length ? allowOrigins : ['*'],
                 allowCredentials: true,
-                allowOrigins: Cors.ALL_ORIGINS,
             },
         })
         restApi.addGatewayResponse('BadRequestBodyValidationTemplate', {
@@ -78,13 +86,10 @@ export class BaseStack extends Stack {
             logRetention,
         })
 
-        const fullDomainName = domainPrefix ? `${domainPrefix}.${baseDomainName}` : baseDomainName
-
         const {userPoolClientId} = new AuthService(this, 'AuthService', {
             restApi,
             restApiV1Resource,
             userPool,
-            domainName: fullDomainName,
             logRetention,
         })
 
